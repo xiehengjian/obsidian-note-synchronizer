@@ -16,7 +16,7 @@ test('Render back link', () => {
 
 test('e2e', () => {
   const fields = { 正面: '笔记', 背面: '[[另一条笔记]]' };
-  const result = markdownMode.format(new Note('', '', '', { nid: 0, mid: 0, tags: [] }, fields));
+  const result = markdownMode.format(new Note('', '', '','', { nid: 0, mid: 0, tags: [] }, fields));
   expect(result['正面']).toBe(
     '[笔记](obsidian://open?vault=%E5%8D%A1%E7%89%87%E7%9B%92&file=%E7%AC%94%E8%AE%B0)'
   );

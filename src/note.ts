@@ -20,6 +20,7 @@ export interface FrontMatter {
 export default class Note {
   basename: string;
   folder: string;
+  vault: string;
   nid: number;
   mid: number;
   tags: string[];
@@ -30,12 +31,14 @@ export default class Note {
   constructor(
     basename: string,
     folder: string,
+    vault:string,
     typeName: string,
     frontMatter: FrontMatter,
     fields: Record<string, string>
   ) {
     this.basename = basename;
     this.folder = folder;
+    this.vault = vault;
     const { mid, nid, tags, ...extras } = frontMatter;
     this.typeName = typeName;
     this.mid = mid;
@@ -58,7 +61,9 @@ export default class Note {
   }
 
   renderDeckName() {
-    return this.folder.replace(/\//g, "::") || "Obsidian";
+    console.log(this.folder)
+    console.log(this.vault)
+    return this.vault+"::"+this.folder.replace(/\//g, "::") || "Obsidian";
   }
 
   isCloze() {
@@ -84,20 +89,30 @@ export class NoteManager {
       !frontmatter.hasOwnProperty('mid') ||
       !frontmatter.hasOwnProperty('nid') ||
       !frontmatter.hasOwnProperty('tags')
-    )
+    ){
+      console.log("frontmatter does not has own property")
       return [undefined, undefined];
+    }
+      
     const frontMatter = Object.assign({}, frontmatter, { position: undefined }) as FrontMatter;
     const lines = content.split("\n");
     const yamlEndIndex = lines.indexOf("---", 1);
     const body = lines.slice(yamlEndIndex + 1);
     const noteType = noteTypes.get(frontMatter.mid);
-    if (!noteType) return [undefined, undefined];
+    if (!noteType){
+      console.log("get note type failed")
+      return [undefined, undefined];
+    } 
     const [fields, mediaNameMap] = this.parseFields(file.basename, noteType, body, media);
-    if (!fields) return [undefined, undefined];
+    if (!fields){
+      console.log("get fields failed")
+      return [undefined, undefined];
+    } 
     // now it is a valid Note
     const basename = file.basename;
     const folder = file.parent.path == '/' ? '' : file.parent.path;
-    return [new Note(basename, folder, noteType.name, frontMatter, fields), mediaNameMap];
+    const  vault = file.vault.getName()
+    return [new Note(basename, folder,vault, noteType.name, frontMatter, fields), mediaNameMap];
   }
 
   parseFields(
@@ -141,7 +156,12 @@ export class NoteManager {
       }
     }
     fieldContents.push(buffer.join('\n'));
-    if (fieldNames.length !== fieldContents.length) return [undefined, undefined];
+    if (fieldNames.length !== fieldContents.length){
+      console.log("filedNames length not equal with filedContents length")
+      console.log(fieldNames)
+      console.log(fieldContents)
+      return [undefined, undefined];
+    } 
     const fields: Record<string, string> = {};
     fieldNames.map((v, i) => (fields[v] = fieldContents[i]));
     return [fields, mediaNameMap];

@@ -73,6 +73,7 @@ export class NoteTypeState extends State<number, NoteTypeDigest> {
     const templateNote = new Note(
       value.name,
       this.templateFolderPath!,
+      this.plugin.app.vault.getName(),
       value.name,
       pseudoFrontMatter,
       pseudoFields

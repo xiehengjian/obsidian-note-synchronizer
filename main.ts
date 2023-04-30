@@ -32,11 +32,13 @@ export default class AnkiSynchronizer extends Plugin {
         this.noteState.set(parseInt(key), noteState[key]);
       }
       for (const key in noteTypeState) {
+        console.log("note type key:",key)
         this.noteTypeState.set(parseInt(key), noteTypeState[key]);
       }
     }
     this.configureUI();
     console.log(locale.onLoad);
+    console.log(this.noteTypeState)
   }
 
   configureUI() {
@@ -128,10 +130,15 @@ export default class AnkiSynchronizer extends Plugin {
   }
 
   async synchronize() {
+    console.log("开始同步")
     const templatesPath = this.getTemplatePath();
-    if (templatesPath === undefined) return;
+    if (templatesPath === undefined) {
+      console.log("templatesPath is undefined")
+      return;
+    } 
     new Notice(locale.synchronizeStartNotice);
     const allFiles = this.app.vault.getMarkdownFiles();
+    
     const state = new Map<number, [NoteDigest, Note]>();
     for (const file of allFiles) {
       // ignore templates
@@ -148,6 +155,7 @@ export default class AnkiSynchronizer extends Plugin {
           );
         }
       }
+      console.log(file)
       const [note, mediaNameMap] = this.noteManager.validateNote(
         file,
         frontmatter,
@@ -155,8 +163,14 @@ export default class AnkiSynchronizer extends Plugin {
         media,
         this.noteTypeState
       );
-      if (!note) continue;
+      if (!note) {
+        console.log("创建node失败")
+        continue;
+      }
+      console.log(note)
+     
       if (note.nid === 0) {
+        console.log(note)
         // new file
         const nid = await this.noteState.handleAddNote(note);
         if (nid === undefined) {
